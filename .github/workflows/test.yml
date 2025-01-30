@@ -9,12 +9,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print Secret (Masked)
-        run: echo "My secret is set!"
-        env:
-          REALLYBAD: ${{ secrets.REALLYBAD }}
+      - name: Mask Secret
+        run: echo "::add-mask::${{ secrets.REALLYBAD }}"
 
-      - name: Print Secret (Base64 Encoding to Avoid Masking)
-        run: echo "My secret is: $(echo $REALLYBAD | base64)"
-        env:
-          REALLYBAD: ${{ secrets.REALLYBAD }}
+      - name: Print Secret (Safely)
+        run: echo "My secret is set but hidden in logs."
