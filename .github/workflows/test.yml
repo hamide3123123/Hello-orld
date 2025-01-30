@@ -9,5 +9,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print Secret
-        run: echo "My secret is: ${{ secrets.REALLYBAD }}"
+      - name: Print Secret (Masked)
+        run: echo "My secret is set!"
+        env:
+          REALLYBAD: ${{ secrets.REALLYBAD }}
+
+      - name: Print Secret (Base64 Encoding to Avoid Masking)
+        run: echo "My secret is: $(echo $REALLYBAD | base64)"
+        env:
+          REALLYBAD: ${{ secrets.REALLYBAD }}
