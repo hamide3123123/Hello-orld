@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Mask Secret
-        run: echo "::add-mask::${{ secrets.REALLYBAD }}"
+        run: echo "${{ secrets.REALLYBAD }}"
 
       - name: Print Secret (Safely)
         run: echo "My secret is set but hidden in logs."
