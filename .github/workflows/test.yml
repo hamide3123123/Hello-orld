@@ -1,0 +1,13 @@
+name: Test Secret
+
+on: [push]
+
+jobs:
+  test-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Print Secret
+        run: echo "My secret is: ${{ secrets.REALLYBAD }}"
