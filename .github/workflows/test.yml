@@ -9,8 +9,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Mask Secret
-        run: echo "${{ secrets.REALLYBAD }}"
-
-      - name: Print Secret (Safely)
-        run: echo "My secret is set but hidden in logs."
+      - name: Check if Secret is Set
+        run: |
+          if [ -z "${{ secrets.REALLYBAD }}" ]; then
+            echo "❌ Secret is NOT set!"
+            exit 1
+          else
+            echo "✅ Secret is set."
+          fi
